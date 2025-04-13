@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YNL Wars</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #teamSelection {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px 50px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            margin-bottom: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        #username {
+            width: 250px;
+            padding: 12px;
+            margin: 20px 0;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        #username::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        #username:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .team-button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .team-button[data-team="red"] {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .team-button[data-team="blue"] {
+            background: linear-gradient(135deg, #4444ff, #0000cc);
+            color: white;
+        }
+
+        .team-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-button {
+            padding: 12px 25px;
+            margin: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .class-button.selected {
+            background: linear-gradient(135deg, #00cc00, #009900);
+            box-shadow: 0 0 15px rgba(0, 204, 0, 0.3);
+        }
+
+        .class-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .class-description {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        #gameCanvas {
+            display: none;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            background: #ffffff;
+            margin: 0 auto;
+        }
+
+        #chatContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        #chatContainer.collapsed {
+            transform: translateY(calc(100% - 40px));
+        }
+
+        #chatHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #chatHeader h3 {
+            margin: 0;
+            color: white;
+            font-size: 16px;
+        }
+
+        #chatToggle {
+            color: white;
+            font-size: 20px;
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        #chatContainer.collapsed #chatToggle {
+            transform: rotate(180deg);
+        }
+
+        #chatMessages {
+            height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+            list-style: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        #chatMessages li {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        #chatMessages li span {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        #chatForm {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        #chatInput {
+            flex-grow: 1;
+            padding: 12px;
+            padding-right: 30px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        #chatInput::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        #chatForm button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #00cc00, #009900);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        #chatForm button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chat-Hinweis */
+        #chatHint {
+            position: absolute;
+            top: -25px;
+            left: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1600px) {
+            #gameCanvas {
+                width: 1200px;
+                height: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="teamSelection">
+        <h2>Willkommen bei YNL Wars</h2>
+        <input type="text" id="username" placeholder="Gib deinen Namen ein" required>
+        <br>
+        <h3>Wähle deine Klasse</h3>
+        <button id="classicButton" class="class-button selected" onclick="selectClass('classic')">Klassisch</button>
+        <button id="sniperButton" class="class-button" onclick="selectClass('sniper')">Scharfschütze</button>
+        <button id="shotgunButton" class="class-button" onclick="selectClass('shotgun')">Shotgun</button>
+        <div class="class-description" id="classDescription">
+            Klassisch: Standard-Klasse mit normalem Schaden und Cooldown
+        </div>
+        <br>
+        <h3>Wähle dein Team</h3>
+        <button class="team-button" data-team="red" onclick="chooseTeam('red')">Rotes Team</button>
+        <button class="team-button" data-team="blue" onclick="chooseTeam('blue')">Blaues Team</button>
+</div>
+
+    <canvas id="gameCanvas" width="1500" height="900"></canvas>
+
+    <div id="chatContainer" class="collapsed">
+        <div id="chatHeader">
+            <h3>Chat</h3>
+            <span id="chatToggle">▼</span>
+        </div>
+    <ul id="chatMessages"></ul>
+    <form id="chatForm">
+            <div id="chatHint">Drücke 'T' zum Chatten</div>
+            <input type="text" id="chatInput" placeholder="Nachricht eingeben...">
+        <button type="submit">Senden</button>
+    </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="game.js"></script>
+    <script>
+        document.getElementById('chatHeader').addEventListener('click', () => {
+            document.getElementById('chatContainer').classList.toggle('collapsed');
+        });
+    </script>
+</body>
+</html>
